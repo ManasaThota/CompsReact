@@ -1,10 +1,27 @@
 import { hover } from "@testing-library/user-event/dist/hover";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoChevronDown } from "react-icons/go";
+import Panel from "./Panel";
+import { click } from "@testing-library/user-event/dist/click";
 
 const DropDown = ({options, value, onChange}) => {
   const [isOpen, setIsOpen] =  useState(false);
+  const divEl = useRef();
 
+  useEffect(()=>{
+    const handler = (event)=> {
+      if(!divEl.current){
+        return;
+      }
+      if(!divEl.current.contains(event.target)){
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('click', handler,true);
+    return() =>{
+      document.removeEventListener('click', handler);
+    }
+  },[])
   const handleClick = () => {
     setIsOpen(!isOpen);
   }
@@ -19,12 +36,12 @@ const DropDown = ({options, value, onChange}) => {
   });
 
   return (
-    <div className="w-48 relative">
-      <div className="flex justify-between items-center cursor-pointer border rounded p-3 shadow bg-white w-full" onClick={handleClick}>
+    <div ref={divEl} className="w-48 relative">
+      <Panel className="flex justify-between items-center cursor-pointer" onClick={handleClick}>
         {value?.label || "Select..."}
         <GoChevronDown />
-      </div>
-      {isOpen && <div className="absolute top-full border rounded p-3 shadow bg-white w-full">{renderedElements}</div>}
+      </Panel>
+      {isOpen && <Panel className="absolute top-full">{renderedElements}</Panel>}
     </div>
   )
 }
